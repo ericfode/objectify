@@ -84,7 +84,9 @@ Objectify has two primary components:
         end
       ```
 
-  2. A dependency injection framework. Objectify automatically injects dependencies into objects it manages based on parameter names. So, if you have a service method signature like  `PictureCreationService#call(params)`, objectify will automatically inject the request's params when it calls that method. It's very simple to create custom injections. More on that below.
+####dependency injection framework
+
+Objectify automatically injects dependencies into objects it manages based on parameter names. So, if you have a service method signature like  `PictureCreationService#call(params)`, objectify will automatically inject the request's params when it calls that method. It's very simple to create custom injections. More on that below.
 
 
 ## What if I have a bunch of existing rails code?
