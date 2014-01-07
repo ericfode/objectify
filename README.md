@@ -4,13 +4,12 @@ Objectify is a framework that codifies good object oriented design practices for
 
 ## How it works
 
-Objectify has two primary components:
+####Request execution framework
+The request execution framework separates the responsibilities that are typically jammed together in rails controller actions in to 3 types of components: *Policies*, *Services*, and *Responders*. Properly separating and assigning these responsibilities makes code far more testable, and facilitates better reuse of components.
 
-  1. A request execution framework that separates the responsibilities that are typically jammed together in rails controller actions in to 3 types of components: Policies, Services, and Responders. Properly separating and assigning these responsibilities makes code far more testable, and facilitates better reuse of components.
+The flow of an objectify request is as follows:
 
-  The flow of an objectify request is as follows:
-
-    0. Objectify actions are configured in the routes file:
+  0. Objectify actions are configured in the routes file:
 
       ```ruby
         # config/routes.rb
@@ -18,9 +17,9 @@ Objectify has two primary components:
         objectify.resources :pictures
       ```
 
-      Objectify currently only supports resourceful actions, but that's just a temporary thing.
+  Objectify currently only supports resourceful actions, but that's just a temporary thing.
 
-    1. The policy chain is resolved (based on the various levels of configuration) and executed. Objectify calls the `#allowed?(...)` method on each policy in the chain. If one of the policies fails, the chain short-circuits at that point, and objectify executes the configured responder for that policy.
+  1. The *policy* chain is resolved (based on the various levels of configuration) and executed. Objectify calls `#allowed?(...)` on each policy in the chain in order, the chain short-circuits if any fail. In the case of failure objectify executes the configured *responder* for that policy.
 
       An example Policy:
 
@@ -33,7 +32,7 @@ Objectify has two primary components:
         end
       ```
 
-      A responder, in case that policy fails.
+      A responder, in case that *policy* fails.
 
       ```ruby
         class UnauthenticatedResponder
@@ -43,7 +42,7 @@ Objectify has two primary components:
         end
       ```
 
-      Here's how you setup the RequiresLoginPolicy to run by default (you can configure specific actions to ignore it), and connect the policy with its responder.
+      To setup the RequiresLoginPolicy to run by default or to have only specific actions respond to it and connect the *policy* with its *responder*.
 
       ```ruby
         # config/routes.rb
@@ -53,9 +52,9 @@ Objectify has two primary components:
         end
       ```
 
-    2. If all the policies succeed, the service for that action is executed. A service is typically responsible for fetching and / or manipulating data.
+  2. If all the policies succeed, the *service* for that action is executed. A *service* is typically responsible for fetching and / or manipulating data.
 
-      A very simple example of a service:
+      A very simple example of a *service*:
 
       ```ruby
         class PicturesCreateService
@@ -66,7 +65,7 @@ Objectify has two primary components:
         end
       ```
 
-    3. Finally, the responder is executed. Following with our `Pictures#create` example:
+  3. Finally, the *responder* is executed. Following with our `Pictures#create` example:
 
       ```ruby
         class PicturesCreateResponder
@@ -84,12 +83,14 @@ Objectify has two primary components:
         end
       ```
 
-  2. A dependency injection framework. Objectify automatically injects dependencies into objects it manages based on parameter names. So, if you have a service method signature like  `PictureCreationService#call(params)`, objectify will automatically inject the request's params when it calls that method. It's very simple to create custom injections. More on that below.
+####Dependency injection framework
+
+Objectify automatically injects dependencies into objects it manages based on parameter names. So, if you have a service method signature like  `PictureCreationService#call(params)`, objectify will automatically inject the request's params when it calls that method. It's very simple to create custom injections. More on that below.
 
 
-## What if I have a bunch of existing rails code?
+##What if I have a bunch of existing rails code?
 
-Objectify has a legacy mode that allows you to execute the policy chain as a `before_filter` in your ApplicationController. You can also configure policies (and `skip_policies`) for your "legacy" actions. That way, access control code is shared between the legacy and objectified components of your application.
+Objectify has a legacy mode that allows you to execute the policy chain as a `before_filter` in your ApplicationController. You can also configure *policies* (and `skip_policies`) for your "legacy" actions. That way, access control code is shared between the legacy and objectified components of your application.
 
 I completely rewrote our legacy authentication system as a set of objectify policies, resolvers, and services - I'm gonna package that up and release it soon.
 
